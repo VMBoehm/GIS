@@ -5,7 +5,7 @@ import argparse
 parser = argparse.ArgumentParser()
 
 # data
-parser.add_argument('--dataset', type=str, default='mnist',
+parser.add_argument('--dataset', type=str, default='power',
                     choices=['power', 'gas', 'hepmass', 'miniboone', 'bsds300', 'mnist', 'fmnist', 'cifar10'],
                     help='Name of dataset to use.')
 
@@ -28,9 +28,9 @@ torch.cuda.manual_seed_all(args.seed)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-#assert torch.cuda.is_available()
-device = torch.device('cpu')
-#torch.set_default_tensor_type('torch.cuda.FloatTensor')
+assert torch.cuda.is_available()
+device = torch.device('cuda')
+torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 if args.dataset == 'power':
     data_train, data_validate, data_test = load_data_power()
@@ -125,31 +125,6 @@ if args.dataset in ['mnist', 'fmnist', 'cifar10']:
     best_validate_logp = logp_validate[-1]
     best_Nlayer = 1 
 
-'''
-t = time.time()
-
-j = 0
-while j * batchsize < len(data_train):
-    data_train[j*batchsize:(j+1)*batchsize], logj_train[j*batchsize:(j+1)*batchsize] = model(data_train[j*batchsize:(j+1)*batchsize])
-    j += 1
-logp_train.append((torch.mean(logj_train) - ndim/2*torch.log(torch.tensor(2*math.pi)) - torch.mean(torch.sum(data_train**2,  dim=1)/2)).item())
-
-j = 0
-while j * batchsize < len(data_validate):
-    data_validate[j*batchsize:(j+1)*batchsize], logj_validate[j*batchsize:(j+1)*batchsize] = model(data_validate[j*batchsize:(j+1)*batchsize])
-    j += 1
-logp_validate.append((torch.mean(logj_validate) - ndim/2*torch.log(torch.tensor(2*math.pi)) - torch.mean(torch.sum(data_validate**2,  dim=1)/2)).item())
-
-j = 0
-while j * batchsize < len(data_test):
-    data_test[j*batchsize:(j+1)*batchsize], logj_test[j*batchsize:(j+1)*batchsize] = model(data_test[j*batchsize:(j+1)*batchsize])
-    j += 1
-logp_test.append((torch.mean(logj_test) - ndim/2*torch.log(torch.tensor(2*math.pi)) - torch.mean(torch.sum(data_test**2,  dim=1)/2)).item())
-
-print ('logp:', logp_train[-1], logp_validate[-1], logp_test[-1], 'time:', time.time()-t, 'iteration:', len(model.layer))
-
-'''
-
 wait = 0
 print(data_train.shape)
 #sliced transport layer
@@ -162,7 +137,6 @@ while True:
         kernel = [4, 4]
         n_component = 8
         shift = torch.randint(4, (2,)).tolist()
-        print(shift)
         layer = PatchSlicedTransport(shape=shape, kernel_size=kernel, shift=shift, n_component=n_component, interp_nbin=interp_nbin).requires_grad_(False).cuda()
     else:
         kernel = [2, 2]
@@ -220,6 +194,3 @@ while True:
 model.layer = model.layer[:best_Nlayer]
 print ('best logp:', logp_train[best_Nlayer-1], logp_validate[best_Nlayer-1], logp_test[best_Nlayer-1], 'time:', time.time()-t_total, 'iteration:', len(model.layer))
 #torch.save(model, '/global/scratch/biwei/model/GIS/GIS_%s_train%d_validate%d_seed%d_defaultparam' % (args.dataset, len(data_train), len(data_validate), args.seed))
-print ()
-print ()
-print ()

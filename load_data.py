@@ -17,9 +17,7 @@ def load_data_mnist(root, flatten=True):
     ])
     train_data = torchvision.datasets.MNIST(root=os.path.join(root,"data"), train=True, download=True, transform=transform)
     test_data = torchvision.datasets.MNIST(root=os.path.join(root,"data"), train=False, download=True, transform=transform)
-    print(train_data.data.shape)
-    return train_data.data, test_data.data
-
+    return train_data.train_data, test_data.test_data
 
 
 def load_data_fmnist(root,flatten=True):
@@ -32,7 +30,6 @@ def load_data_fmnist(root,flatten=True):
     return train_data.data, test_data.data
 
 
-
 def load_data_cifar10(root,flatten=True):
     transform = transforms_.Compose([
         transforms_.ToTensor(),
@@ -41,7 +38,6 @@ def load_data_cifar10(root,flatten=True):
     train_data = torchvision.datasets.CIFAR10(root=os.path.join(root,"data"), train=True, download=True, transform=transform)
     test_data = torchvision.datasets.CIFAR10(root=os.path.join(root,"data"), train=False, download=True, transform=transform)
     return train_data.data, test_data.data
-
 
 
 def load_data_celeba(flag='training', side_length=None, num=None):
@@ -83,7 +79,9 @@ def load_data_celeba(flag='training', side_length=None, num=None):
 
 def load_data_power():
     def load_data():
-        return np.load('/global/scratch/biwei/data/power/data.npy')
+        data = np.load('/global/scratch/vboehm/maf_preprocessed_data/power/data.npy')
+        print(data.shape)
+        return data 
 
     def load_data_split_with_noise():
     
