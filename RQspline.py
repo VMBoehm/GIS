@@ -166,14 +166,6 @@ class kde(object):
         return result
 
 
-def SearchSorted(a, v, side='left'):
-    assert side in ['left', 'right']
-    if side == 'left':
-        return torch.sum(v[..., None] > a, dim=-1)
-    else:
-        return torch.sum(v[..., None] >= a, dim=-1)
-
-
 class RQspline(nn.Module):
     '''
     Ratianal quadratic spline.
@@ -233,7 +225,7 @@ class RQspline(nn.Module):
         # x: (ndata, ndim) 2d array
         xx, yy, delta = self._prepare() #(ndim, nknot)
 
-        index = SearchSorted(xx, x)
+        index = torch.searchsorted(xx.detach(), x.T.contiguous().detach()).T
         y = torch.zeros_like(x)
         logderiv = torch.zeros_like(x)
 
@@ -265,7 +257,7 @@ class RQspline(nn.Module):
     def inverse(self, y):
         xx, yy, delta = self._prepare()
 
-        index = SearchSorted(yy, y)
+        index = torch.searchsorted(yy.detach(), y.T.contiguous().detach()).T
         x = torch.zeros_like(y)
         logderiv = torch.zeros_like(y)
 
@@ -516,4 +508,3 @@ def estimate_knots(data, sample, interp_nbin, above_noise, edge_bins=4, derivcli
                 dx = x[i,1:] - x[i,:-1]
 
     return x, y, deriv
-
